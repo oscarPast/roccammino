@@ -4,5 +4,5 @@
   { "id": "portacomaro", "name": "Anello dintorni Portacomaro", "km": 8, "ascent": 999, "difficulty": "media",
     "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Giro ad anello con vista Alto Monferrato."},   
   { "id": "cresta", "name": "Cresta panoramica", "km": 12.6, "ascent": 999, "difficulty": "impegnativa",
-    "themes": ["ambiente"], "gpx": "cresta.gpx", "desc": "Tratto di cresta con ampie viste sul lago." }
+    "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Tratto di cresta con ampie viste sul lago." }
 ]
