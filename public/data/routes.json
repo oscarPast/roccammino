@@ -1,8 +1,0 @@
-[
-  { "id": "anello-barro", "name": "Anello del Monte Barro", "km": 8.4, "ascent": 420, "difficulty": "media",
-    "themes": ["storia", "ambiente"], "gpx": "anello-barro.gpx", "desc": "Giro ad anello con tappa all'insediamento fortificato." },
-  { "id": "sentiero-acqua", "name": "Sentiero dell'acqua", "km": 3.2, "ascent": 80, "difficulty": "facile",
-    "themes": ["ambiente", "cultura"], "gpx": "sentiero-acqua.gpx", "desc": "Percorso breve tra torrenti e antichi lavatoi." },
-  { "id": "cresta", "name": "Cresta panoramica", "km": 12.6, "ascent": 780, "difficulty": "impegnativa",
-    "themes": ["ambiente"], "gpx": "cresta.gpx", "desc": "Tratto di cresta con ampie viste sul lago." }
-]
