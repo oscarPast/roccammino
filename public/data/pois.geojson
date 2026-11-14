@@ -1,0 +1,17 @@
+{ "type": "FeatureCollection", "features": [
+  { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.4300, 45.8200] },
+    "properties": { "id": "p1", "title": "Insediamento fortificato", "category": "storia", "routes": ["anello-barro"], "radius": 80,
+      "text": "Resti di un abitato d'altura di epoca tardoantica. Testo di esempio: qui andranno la storia del sito e le note archeologiche." } },
+  { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.4380, 45.8160] },
+    "properties": { "id": "p2", "title": "Faggeta secolare", "category": "ambiente", "routes": ["anello-barro"], "radius": 70,
+      "text": "Bosco maturo di faggi. Testo di esempio: specie presenti, periodo migliore per la visita." } },
+  { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.4100, 45.8050] },
+    "properties": { "id": "p3", "title": "Antico lavatoio", "category": "cultura", "routes": ["sentiero-acqua"], "radius": 60,
+      "text": "Lavatoio in pietra usato fino a metà Novecento. Testo di esempio sulla vita rurale." } },
+  { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.4450, 45.8275] },
+    "properties": { "id": "p4", "title": "Belvedere sul lago", "category": "ambiente", "routes": ["cresta"], "radius": 80,
+      "text": "Punto panoramico. Testo di esempio: cosa si vede e come orientarsi." } },
+  { "type": "Feature", "geometry": { "type": "Point", "coordinates": [9.4175, 45.8105] },
+    "properties": { "id": "s1", "title": "Parcheggio e fontana", "category": "servizi", "routes": ["anello-barro", "sentiero-acqua"],
+      "text": "Punto di partenza dei percorsi. Parcheggio, fontana e bacheca informativa." } }
+]}

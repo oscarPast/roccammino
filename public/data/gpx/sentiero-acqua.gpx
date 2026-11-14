@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="prototipo" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk><name>sentiero-acqua</name><trkseg>
+      <trkpt lat="45.8105" lon="9.4175"><ele>500</ele></trkpt>
+      <trkpt lat="45.808" lon="9.413"><ele>525</ele></trkpt>
+      <trkpt lat="45.805" lon="9.41"><ele>550</ele></trkpt>
+      <trkpt lat="45.802" lon="9.412"><ele>575</ele></trkpt>
+      <trkpt lat="45.8" lon="9.417"><ele>600</ele></trkpt>
+  </trkseg></trk>
+</gpx>
