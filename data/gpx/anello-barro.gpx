@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="prototipo" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk><name>anello-barro</name><trkseg>
+      <trkpt lat="45.8105" lon="9.4175"><ele>500</ele></trkpt>
+      <trkpt lat="45.813" lon="9.422"><ele>525</ele></trkpt>
+      <trkpt lat="45.8165" lon="9.426"><ele>550</ele></trkpt>
+      <trkpt lat="45.82" lon="9.43"><ele>575</ele></trkpt>
+      <trkpt lat="45.8225" lon="9.435"><ele>600</ele></trkpt>
+      <trkpt lat="45.82" lon="9.44"><ele>625</ele></trkpt>
+      <trkpt lat="45.816" lon="9.438"><ele>650</ele></trkpt>
+      <trkpt lat="45.813" lon="9.432"><ele>675</ele></trkpt>
+      <trkpt lat="45.8105" lon="9.425"><ele>700</ele></trkpt>
+      <trkpt lat="45.8105" lon="9.4175"><ele>725</ele></trkpt>
+  </trkseg></trk>
+</gpx>
