@@ -1,8 +1,8 @@
 [
-  { "id": "anello-portacomaro", "name": "Anello Portacomaro, i sentieri del Papa", "km": 7, "ascent": 000, "difficulty": "facile",
+  { "id": "anello-portacomaro", "name": "Anello Portacomaro, i sentieri del Papa", "km": 7, "ascent": 999, "difficulty": "facile",
     "themes": ["storia", "ambiente"], "gpx": "2026-11-07.gpx", "desc": "Giro ad anello dintorni di Portacomaro che coinvolge le origini di Papa Francesco." },
-  { "id": "portacomaro", "name": "Anello dintorni Portacomaro", "km": 8, "ascent": 000, "difficulty": "media",
+  { "id": "portacomaro", "name": "Anello dintorni Portacomaro", "km": 8, "ascent": 999, "difficulty": "media",
     "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Giro ad anello con vista Alto Monferrato."},   
-  { "id": "cresta", "name": "Cresta panoramica", "km": 12.6, "ascent": 780, "difficulty": "impegnativa",
+  { "id": "cresta", "name": "Cresta panoramica", "km": 12.6, "ascent": 999, "difficulty": "impegnativa",
     "themes": ["ambiente"], "gpx": "cresta.gpx", "desc": "Tratto di cresta con ampie viste sul lago." }
 ]
