@@ -4,7 +4,13 @@
   { "id": "portacomaro-1", "name": "Portacomaro dintorni, Anello", "km": 8, "ascent": 999, "difficulty": "media",
     "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Giro ad anello con vista Alto Monferrato."},
     
-  { "id": "santanna-2", "name": "Anello breve S.Anna S.Carlo", "km": 5.6, "ascent": 999, "difficulty": "facile",
+    
+  { "id": "tanaro-1", "name": "Piana del Tanaro, strada rebengo poi argine destro ", "km": 4.1, "ascent": 999, "difficulty": "facile",
+    "themes": ["ambiente"], "gpx": "2026-01-05.gpx", "desc": "Giro ad anello breve da Sant.Anna s San Carlo"},
+    
+    
+    
+  { "id": "santanna-2", "name": "S.Anna S.Carlo, Anello breve ", "km": 5.6, "ascent": 999, "difficulty": "facile",
     "themes": ["ambiente"], "gpx": "2026-01-02.gpx", "desc": "Giro ad anello breve da Sant.Anna s San Carlo"},
   { "id": "santanna-1", "name": "S.Anna-S.Carlo-Montaldo Sc.", "km": 16.5, "ascent": 999, "difficulty": "impegnativa",
     "themes": ["ambiente"], "gpx": "2025-12-28.gpx", "desc": "Lungo Anello da S.Anna e ritorno via San Carlo e Montaldo Scarampi." }
