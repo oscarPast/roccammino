@@ -3,6 +3,6 @@
     "themes": ["storia", "ambiente"], "gpx": "2026-11-07.gpx", "desc": "Giro ad anello dintorni di Portacomaro che coinvolge le origini di Papa Francesco." },
   { "id": "portacomaro", "name": "Anello dintorni Portacomaro", "km": 8, "ascent": 999, "difficulty": "media",
     "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Giro ad anello con vista Alto Monferrato."},   
-  { "id": "cresta", "name": "Cresta panoramica", "km": 12.6, "ascent": 999, "difficulty": "impegnativa",
-    "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Tratto di cresta con ampie viste sul lago." }
+  { "id": "s-Anna-s-carlo-montaldo", "name": "S.Anna-S.Carlo-Montaldo Sc.", "km": 16.5, "ascent": 999, "difficulty": "impegnativa",
+    "themes": ["ambiente"], "gpx": "2025-12-28.gpx", "desc": "Lungo Anello da S.Anna e ritorno via San Carlo e Montaldo Scarampi." }
 ]
