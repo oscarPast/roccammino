@@ -1,7 +1,7 @@
 [
-  { "id": "anello-portacomaro", "name": "Anello Portacomaro, i sentieri del Papa", "km": 7, "ascent": 999, "difficulty": "facile",
+  { "id": "portacomaro-2", "name": "Portacomaro, Anello i sentieri del Papa", "km": 7, "ascent": 999, "difficulty": "facile",
     "themes": ["storia", "ambiente"], "gpx": "2026-11-07.gpx", "desc": "Giro ad anello dintorni di Portacomaro che coinvolge le origini di Papa Francesco." },
-  { "id": "portacomaro", "name": "Anello dintorni Portacomaro", "km": 8, "ascent": 999, "difficulty": "media",
+  { "id": "portacomaro-1", "name": "Portacomaro dintorni, Anello", "km": 8, "ascent": 999, "difficulty": "media",
     "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Giro ad anello con vista Alto Monferrato."},
     
   { "id": "santanna-2", "name": "Anello breve S.Anna S.Carlo", "km": 5.6, "ascent": 999, "difficulty": "facile",
