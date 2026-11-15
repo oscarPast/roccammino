@@ -9,7 +9,7 @@ const $ = (sel) => document.querySelector(sel);
 const COLORS = { facile: '#2e5b4e', media: '#b7791f', impegnativa: '#9b2c2c' };
 
 // ---------- Mappa ----------
-const map = L.map('map').setView([44.873807, 8.285832], 14);
+const map = L.map('map').setView([44.873807, 8.285832], 12);
 const OSM = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const DEFAULT_BASE = 'Topografica (OpenTopoMap)';
 
