@@ -28,8 +28,8 @@
       </fieldset>
 
       <label class="range">
-        Lunghezza massima: <output id="kmOut">35</output> km
-        <input id="km" type="range" min="3" max="35" value="20" />
+        Lunghezza massima: <output id="kmOut">20</output> km
+        <input id="km" type="range" min="1" max="20" value="20" />
       </label>
     </section>
 
@@ -43,6 +43,10 @@
       <button id="simulate">Simula cammino</button>
     </section>
   </aside>
+
+  <button id="togglePanel" aria-expanded="true">
+    Nascondi pannello ▲
+  </button>
 
   <main id="map" aria-label="Mappa"></main>
   <div id="toast" role="status" aria-live="polite" hidden></div>

@@ -8,8 +8,25 @@ import './style.css';
 const $ = (sel) => document.querySelector(sel);
 const COLORS = { facile: '#2e5b4e', media: '#b7791f', impegnativa: '#9b2c2c' };
 
+// Apertura e chiusura pannello
+const panel = document.getElementById('panel');
+const togglePanel = document.getElementById('togglePanel');
+
+togglePanel.addEventListener('click', () => {
+
+  const hidden = panel.classList.toggle('hidden');
+
+  togglePanel.classList.toggle('hidden-panel', hidden);
+
+  togglePanel.textContent = hidden
+    ? 'Percorsi e filtri ▼'
+    : 'Nascondi pannello ▲';
+
+  togglePanel.setAttribute('aria-expanded', String(!hidden));
+});
+
 // ---------- Mappa ----------
-const map = L.map('map').setView([44.873807, 8.285832], 12);
+const map = L.map('map').setView([44.873807, 8.285832], 10);
 const OSM = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const DEFAULT_BASE = 'Topografica (OpenTopoMap)';
 
