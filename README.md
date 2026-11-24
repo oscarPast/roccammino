@@ -10,3 +10,4 @@ Requisiti: Node.js 18+.
 
 I dati stanno in public/data (routes.json, pois.geojson, gpx/).
 La geolocalizzazione richiede HTTPS (localhost è ammesso).
+ 
