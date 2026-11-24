@@ -1,0 +1,50 @@
+# Compila il progetto con Vite e lo pubblica su GitHub Pages a ogni push sul ramo main
+name: Build e pubblicazione su GitHub Pages
+
+on:
+  push:
+    branches: ['main']        # se il tuo ramo principale si chiama "master", cambia qui
+  workflow_dispatch:           # permette di lanciarlo a mano dalla scheda Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@v7
+
+      - name: Installa Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22      # LTS attuale; vedi la nota sulla versione 18
+          cache: npm
+
+      - name: Installa le dipendenze
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepara Pages
+        uses: actions/configure-pages@v6
+
+      - name: Carica la cartella dist
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./dist
+
+      - name: Pubblica
+        id: deployment
+        uses: actions/deploy-pages@v5
