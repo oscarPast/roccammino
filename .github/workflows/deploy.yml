@@ -16,10 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Scarica il codice
@@ -28,7 +25,7 @@ jobs:
       - name: Installa Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 22      # LTS attuale; vedi la nota sulla versione 18
+          node-version: 22
           cache: npm
 
       - name: Installa le dipendenze
@@ -45,6 +42,16 @@ jobs:
         with:
           path: ./dist
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
       - name: Pubblica
         id: deployment
         uses: actions/deploy-pages@v4
