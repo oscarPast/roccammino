@@ -23,7 +23,7 @@ function setPanelHidden(hidden) {
 togglePanel.addEventListener('click', () => setPanelHidden(!panel.classList.contains('hidden')));
 
 // ---------- Mappa ----------
-const map = L.map('map', { renderer: L.canvas({ tolerance: 10 }) }).setView([44.873807, 8.285832], 12);
+const map = L.map('map', { renderer: L.canvas({ tolerance: 10 }) }).setView([44.87339, 8.28558], 12);
 const OSM = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const DEFAULT_BASE = 'Topografica (OpenTopoMap)';
 
