@@ -7,7 +7,7 @@
     "themes": ["ambiente"], "gpx": "2026-10-31.gpx", "desc": "Giro ad anello con vista Alto Monferrato."},
   { "id": "castello-d-annone-1", "name": "RC005-2026-gen Annone-Poggio-Monfallito", "km": 6.5, "ascent": 999, "difficulty": "facile",
     "themes": ["ambiente"], "gpx": "2026-01-10.gpx", "desc": "Giro ad Anello."},
-  { "id": "santanna-3", "name": "RC004-2026-genn S.Anna-Azzano-Montemarzo-Rocca", "km": 12.5, "ascent": 999, "difficulty": "Impegnativa",
+  { "id": "santanna-3", "name": "RC004-2026-genn S.Anna-Azzano-Montemarzo-Rocca", "km": 12.5, "ascent": 999, "difficulty": "impegnativa",
     "themes": ["ambiente"], "gpx": "2026-01-06.gpx", "desc": "Giro ad anello."},       
   { "id": "tanaro-1", "name": "RC003-2026-genn Argini del Tanaro", "km": 4.1, "ascent": 999, "difficulty": "facile",
     "themes": ["ambiente"], "gpx": "2026-01-05.gpx", "desc": "Giro ad anello breve da Sant.Anna s San Carlo"},   
