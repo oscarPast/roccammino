@@ -230,3 +230,78 @@ body.sheet-open #toast { bottom: calc(var(--sheet-h, 0px) + 1rem); }
 .prof-next { fill: var(--ochre); opacity: .22; }
 .here span { display: block; }
 .here .ahead { color: var(--ink); font-weight: 500; }
+
+/* foto e video nei popup dei punti di interesse */
+.popup a { display: block; }
+.popup video { width: 100%; max-height: 220px; margin: .3rem 0; border-radius: 3px; background: #000; }
+
+/* pulsante DOC: stessa grafica del pulsante GPX */
+#routeList a.dl[data-doc] { cursor: pointer; }
+
+/* relazione del percorso */
+#report { position: fixed; inset: 0; z-index: 2000; overflow: auto; background: #dfe5e1; }
+.report-bar {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: .6rem;
+  padding: .5rem 1rem; background: var(--ink); color: #fff;
+}
+.report-bar strong { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-bar button { font: inherit; cursor: pointer; border: 0; border-radius: 4px; padding: .4rem .8rem; background: var(--pine); color: #fff; }
+.report-bar #reportClose { background: none; font-size: 1.6rem; line-height: 1; padding: 0 .4rem; }
+
+.report-doc {
+  max-width: 820px; margin: 1rem auto; padding: 2rem 2.2rem; background: #fff; color: #1b1b1b;
+  box-shadow: 0 1px 8px #0003; line-height: 1.55;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.report-doc h1 { font-size: 1.7rem; margin: .1rem 0 .2rem; color: var(--c, var(--pine)); }
+.report-doc h2 {
+  font-size: 1.05rem; margin: 1.6rem 0 .5rem; padding-bottom: .2rem;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--pine); border-bottom: 2px solid var(--c, var(--pine));
+}
+.report-doc h3 { font-size: 1rem; margin: 1rem 0 .2rem; }
+.report-doc .club { text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; color: var(--muted); }
+.report-doc .sub { margin: 0 0 .8rem; color: var(--muted); }
+.report-doc .lead { font-size: 1.05rem; font-style: italic; }
+.report-doc .note, .report-doc .disclaimer { font-size: .85rem; color: #555; }
+.report-doc .disclaimer { margin-top: 1.5rem; padding-top: .5rem; border-top: 1px solid #ccc; }
+.tech { width: 100%; border-collapse: collapse; }
+.tech th, .tech td { padding: .35rem .6rem; border: 1px solid #d7ded9; vertical-align: top; text-align: left; }
+.tech th { width: 34%; background: #f1f4f2; font-weight: 600; }
+.poi-list li { margin-bottom: .8rem; break-inside: avoid; }
+.poi-list .cat { color: var(--muted); font-size: .85rem; }
+.poi-photos img { max-width: 48%; max-height: 55mm; margin: .3rem .3rem 0 0; border-radius: 3px; object-fit: cover; }
+.doc-card { break-inside: avoid; }
+.doc-profile .prof { width: 100%; height: auto; cursor: default; }
+.doc-map { margin: .8rem 0 0; }
+.doc-map img { width: 100%; height: auto; border: 1px solid #cfd8d2; }
+.doc-map figcaption { font-size: .8rem; color: #555; margin-top: .2rem; }
+
+@media (max-width: 720px) {
+  .report-doc { margin: 0; padding: 1rem; box-shadow: none; }
+  .poi-photos img { max-width: 100%; }
+}
+
+/* stampa / PDF: solo la relazione, su pagine A4 */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  html, body { height: auto !important; overflow: visible !important; display: block !important; background: #fff !important; }
+  body > *:not(#report) { display: none !important; }
+  #report { position: static !important; overflow: visible !important; background: #fff; }
+  .report-bar { display: none !important; }
+  .report-doc { max-width: none; margin: 0; padding: 0; box-shadow: none; font-size: 11pt; }
+  .report-doc h2 { break-after: avoid; }
+  .report-doc a { color: inherit; text-decoration: none; }
+}
+
+/* GPX e DOC impilati: più spazio al titolo del percorso */
+#routeList .dl-group { display: flex; flex-direction: column; gap: .25rem; }
+#routeList .dl-group .dl { flex: 1; min-width: 3.2rem; padding: 0 .4rem; font-size: .72rem; }
+
+/* ricerca nell'elenco: resta visibile mentre l'elenco scorre */
+.search { position: sticky; top: 0; z-index: 1; padding: .4rem 0; background: var(--bg); }
+#search {
+  width: 100%; padding: .5rem .6rem; font: inherit; color: var(--ink);
+  background: #fff; border: 1px solid var(--line); border-radius: 4px;
+}
+#routeList .empty { padding: .5rem .7rem; color: var(--muted); }
+.filter-card .range { display: block; margin: .2rem 0 .7rem; }

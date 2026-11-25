@@ -8,15 +8,13 @@
 <body>
   <aside id="panel">
     <header>
-      <h1>Gruppo cammino Rocca Arazzo</h1>
+      <h1>Gruppo cammino di Rocca Arazzo</h1>
       <p>Diario dei cammini</p>
     </header>
 
-    <section aria-label="Lunghezza">
-      <label class="range">
-        Lunghezza massima: <output id="kmOut">20</output> km
-        <input id="km" type="range" min="1" max="20" value="20" />
-      </label>
+    <section aria-label="Cerca" class="search">
+      <input id="search" type="search" placeholder="Cerca un percorso…" autocomplete="off"
+             aria-label="Cerca un percorso per nome" />
     </section>
 
     <section aria-label="Percorsi">
@@ -32,6 +30,14 @@
 
   <main id="map" aria-label="Mappa"></main>
   <aside id="sheet" hidden aria-label="Dettaglio del percorso"></aside>
+  <div id="report" hidden role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+    <div class="report-bar">
+      <strong id="reportTitle"></strong>
+      <button id="reportPdf">Esporta PDF</button>
+      <button id="reportClose" aria-label="Chiudi la relazione">×</button>
+    </div>
+    <article id="reportDoc" class="report-doc"></article>
+  </div>
   <div id="toast" role="status" aria-live="polite" hidden></div>
 
   <script type="module" src="/src/main.js"></script>

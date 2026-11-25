@@ -3,6 +3,8 @@ import 'leaflet/dist/leaflet.css';
 import { gpx } from '@tmcw/togeojson';
 import distance from '@turf/distance';
 import { computeStats, fmt, fmtDuration, snapToProfile, eleAtKm } from './stats.js';
+import { esc, parseRelazione, imagesHtml, imageUrls, mediaHtml } from './relazione.js';
+import { buildMapImage } from './mapimage.js';
 import './style.css';
 
 const $ = (sel) => document.querySelector(sel);
@@ -23,7 +25,7 @@ function setPanelHidden(hidden) {
 togglePanel.addEventListener('click', () => setPanelHidden(!panel.classList.contains('hidden')));
 
 // ---------- Mappa ----------
-const map = L.map('map', { renderer: L.canvas({ tolerance: 10 }) }).setView([44.87339, 8.28558], 12);
+const map = L.map('map', { renderer: L.canvas({ tolerance: 10 }) }).setView([44.873807, 8.285832], 10);
 const OSM = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const DEFAULT_BASE = 'Topografica (OpenTopoMap)';
 
@@ -98,9 +100,14 @@ async function load() {
 
   pois = poiData.features.map((f) => {
     const [lng, lat] = f.geometry.coordinates;
-    const marker = L.marker([lat, lng]).bindPopup(popupHtml(f.properties));
+    const marker = L.marker([lat, lng]).bindPopup(popupHtml(f.properties), { maxWidth: 320, maxHeight: 380 });
     return { feature: f, marker };
   });
+
+  // il cursore della lunghezza arriva al percorso più lungo (arrotondato per eccesso)
+  const kmInput = $('#km');
+  kmInput.max = Math.max(5, Math.ceil(Math.max(...routes.map((r) => r.km))));
+  kmInput.value = kmInput.max;
 
   applyFilters();
 }
@@ -185,8 +192,8 @@ function attachProfileHover(root, profile) {
   svg.addEventListener('pointerleave', clear);
 }
 
-function profileSvg(profile) {
-  const { W, H, PL, PR, PT, PB } = PROF;
+function profileSvg(profile, W = PROF.W) {
+  const { H, PL, PR, PT, PB } = PROF;
   const xMax = profile[profile.length - 1][0] || 1;
   let yMin = Math.min(...profile.map((p) => p[1]));
   let yMax = Math.max(...profile.map((p) => p[1]));
@@ -288,7 +295,7 @@ function closeSheet() {
 }
 
 sheetEl.addEventListener('click', (e) => { if (e.target.closest('.sheet-close')) closeSheet(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !reportRoute) closeSheet(); });
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
@@ -353,15 +360,23 @@ function updateHere() {
   document.documentElement.style.setProperty('--sheet-h', `${sheetEl.offsetHeight}px`);
 }
 
+// Foto in public/poi-image/, video e audio in public/poi-media/ (vedi README)
 function popupHtml(p) {
   return `<div class="popup">
     <h3>${p.title}</h3>
     <div class="cat">${p.category}</div>
-    ${p.image ? `<img src="${p.image}" alt="" loading="lazy">` : ''}
+    ${imagesHtml(p)}
     <p>${p.text}</p>
-    ${p.audio ? `<audio controls src="${p.audio}"></audio>` : ''}
+    ${mediaHtml(p)}
   </div>`;
 }
+
+// le foto si caricano dopo l'apertura: il popup va rimisurato, altrimenti resta tagliato
+map.on('popupopen', (e) => {
+  e.popup.getElement()?.querySelectorAll('img').forEach((img) => {
+    if (!img.complete) img.addEventListener('load', () => e.popup.update(), { once: true });
+  });
+});
 
 // ---------- Filtri ----------
 const checked = (name) => [...document.querySelectorAll(`input[name=${name}]:checked`)].map((i) => i.value);
@@ -371,7 +386,7 @@ function applyFilters() {
   const themes = checked('theme');
   const maxKm = +$('#km').value;
   // l'icona dei filtri si colora quando almeno un filtro è disattivato
-  filterUi.btn.classList.toggle('on', [...document.querySelectorAll('input[name=diff], input[name=theme]')].some((i) => !i.checked));
+  filterUi.btn.classList.toggle('on', [...document.querySelectorAll('input[name=diff], input[name=theme]')].some((i) => !i.checked) || +$('#km').value < +$('#km').max);
   $('#kmOut').textContent = maxKm;
 
   const visible = routes.filter(
@@ -405,14 +420,26 @@ function applyFilters() {
   renderList(visible);
 }
 
+let lastVisible = []; // percorsi che passano i filtri
+let lastShown = [];   // ...e che contengono il testo cercato
+const norm = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 function renderList(visible) {
-  $('#count').textContent = `${visible.length} percorsi`;
-  $('#routeList').innerHTML = visible
+  lastVisible = visible;
+  const q = norm($('#search').value.trim());
+  const shown = q ? visible.filter((r) => norm(r.name).includes(q)) : visible;
+  lastShown = shown;
+  $('#count').textContent = q ? `${shown.length} percorsi su ${visible.length}` : `${visible.length} percorsi`;
+  if (q && !shown.length) { $('#routeList').innerHTML = '<li class="empty">Nessun percorso trovato</li>'; return; }
+  $('#routeList').innerHTML = shown
     .map(
       (r) => `<li>
         <button data-id="${r.id}" class="${r.id === selectedId ? 'on' : ''}" style="--c:${COLORS[r.difficulty]}">
           ${r.name}<small>${r.km} km · +${r.ascent} m · ${r.difficulty}</small></button>
-        <a class="dl" href="data/gpx/${r.gpx}" download="${r.id}.gpx" aria-label="Scarica il GPX di ${r.name}">↓ GPX</a>
+        <div class="dl-group">
+          <a class="dl" href="data/gpx/${r.gpx}" download="${r.id}.gpx" aria-label="Scarica il GPX di ${r.name}">↓ GPX</a>
+          <a class="dl" href="#" role="button" data-doc="${r.id}" aria-label="Relazione di ${r.name}">DOC</a>
+        </div>
       </li>`
     )
     .join('');
@@ -427,8 +454,18 @@ function select(id) {
 }
 
 document.addEventListener('change', (e) => e.target.closest('#panel, .filter-card') && applyFilters());
-$('#km').addEventListener('input', applyFilters);
+document.addEventListener('input', (e) => { if (e.target.id === 'km') applyFilters(); });
+$('#search').addEventListener('input', () => renderList(lastVisible));
+$('#search').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && lastShown.length === 1) { // un solo risultato: Invio lo apre
+    e.preventDefault();
+    e.target.blur();
+    select(lastShown[0].id);
+  }
+});
 $('#routeList').addEventListener('click', (e) => {
+  const d = e.target.closest('[data-doc]');
+  if (d) { e.preventDefault(); return openReport(d.dataset.doc); }
   const b = e.target.closest('button');
   if (b) select(b.dataset.id);
 });
@@ -495,7 +532,11 @@ const filterUi = (() => {
           <label><input type="checkbox" name="theme" value="storia" checked /> Storia</label>
           <label><input type="checkbox" name="theme" value="ambiente" checked /> Ambiente</label>
           <label><input type="checkbox" name="theme" value="cultura" checked /> Cultura</label>
-        </fieldset>`;
+        </fieldset>
+        <label class="range">
+          Lunghezza massima: <output id="kmOut">20</output> km
+          <input id="km" type="range" min="1" max="20" value="20" />
+        </label>`;
       L.DomEvent.disableClickPropagation(box);
       L.DomEvent.disableScrollPropagation(box);
       L.DomEvent.on(btn, 'click', (e) => { L.DomEvent.preventDefault(e); setOpen(card.hidden); });
@@ -624,5 +665,153 @@ locateBtn.addEventListener('click', (e) => {
 map.on('dragstart', () => {
   if (follow) { follow = false; updateLocateBtn(); }
 });
+
+// ---------- Relazione del percorso (stile CAI) ed esportazione in PDF ----------
+const reportEl = $('#report');
+const reportDoc = $('#reportDoc');
+let reportRoute = null;
+
+const CAI = { T: 'Turistico', E: 'Escursionistico', EE: 'Per escursionisti esperti', EEA: 'Per escursionisti esperti con attrezzatura' };
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+// relazioni/<id>.md, se esiste (il server di sviluppo risponde con index.html ai file mancanti)
+async function loadRelazione(r) {
+  try {
+    const res = await fetch(`relazioni/${encodeURIComponent(r.id)}.md`);
+    if (!res.ok || /html/i.test(res.headers.get('content-type') || '')) return null;
+    return parseRelazione(await res.text());
+  } catch { return null; }
+}
+
+const isLoop = (r) => {
+  const a = r.coords[0], b = r.coords[r.coords.length - 1];
+  return distance([a[1], a[0]], [b[1], b[0]], { units: 'meters' }) < 50;
+};
+
+// POI del percorso nell'ordine in cui si incontrano, numerati (stessi numeri sulla mappa e nell'elenco)
+function routePoiItems(r) {
+  return pois
+    .filter(({ feature }) => feature.properties.category !== 'servizi' && feature.properties.routes?.includes(r.id))
+    .map(({ feature }) => {
+      const [lng, lat] = feature.geometry.coordinates;
+      const snap = snapToProfile(r.stats.profile, lat, lng);
+      return { p: feature.properties, lat, lng, km: snap ? snap.km : 0 };
+    })
+    .sort((a, b) => a.km - b.km)
+    .map((it, i) => ({ ...it, n: i + 1 }));
+}
+
+function makeMapImage(r) {
+  const first = r.coords[0], last = r.coords[r.coords.length - 1];
+  const loop = isLoop(r);
+  const marks = [
+    ...routePoiItems(r).map((it) => ({ lat: it.lat, lng: it.lng, label: String(it.n), bg: '#b7791f' })),
+    { lat: first[0], lng: first[1], label: loop ? 'I/F' : 'I', bg: '#1f7a4d' },
+    ...(loop ? [] : [{ lat: last[0], lng: last[1], label: 'F', bg: '#1d2a25' }]),
+  ];
+  return buildMapImage({ id: r.id, coords: r.coords, color: COLORS[r.difficulty], marks }).catch(() => null);
+}
+
+function reportHtml(r, rel, mapImg) {
+  const st = r.stats;
+  const m = rel?.meta ?? {};
+  const club = $('#panel h1')?.textContent.trim() ?? '';
+  const eleStart = st.hasEle ? Math.round(st.profile[0][1]) : null;
+  const eleEnd = st.hasEle ? Math.round(st.profile[st.profile.length - 1][1]) : null;
+  const cai = (m.cai || '').toUpperCase();
+  const items = routePoiItems(r);
+  const services = pois.map((x) => x.feature.properties).filter((p) => p.category === 'servizi' && p.routes?.includes(r.id));
+
+  const rows = [
+    ['Località', m.localita],
+    ['Partenza', [m.partenza, eleStart != null ? `quota ${eleStart} m` : ''].filter(Boolean).join(' · ')],
+    ['Arrivo', isLoop(r) ? 'Ad anello: ritorno al punto di partenza' : [m.arrivo, eleEnd != null ? `quota ${eleEnd} m` : ''].filter(Boolean).join(' · ')],
+    ['Lunghezza', `${fmt(st.km)} km`],
+    ...(st.hasEle ? [
+      ['Dislivello in salita', `+${Math.round(st.ascent)} m`],
+      ['Dislivello in discesa', `−${Math.round(st.descent)} m`],
+      ['Quota minima / massima', `${Math.round(st.min)} / ${Math.round(st.max)} m`],
+    ] : []),
+    ['Tempo di percorrenza', `${fmtDuration(st.hours)}${st.estimated ? ' (stima, soste escluse)' : ' (dalla traccia GPX)'}`],
+    ['Difficoltà', cap(r.difficulty) + (cai ? ` · scala CAI: ${cai}${CAI[cai] ? ` (${CAI[cai]})` : ''}` : '')],
+    ['Periodo consigliato', m.periodo],
+    ['Segnavia', m.segnavia],
+    ['Acqua', m.acqua],
+    ['Equipaggiamento', m.equipaggiamento],
+    ['Cartografia', m.cartografia],
+  ].filter(([, v]) => v);
+
+  const cell = (label, value) => `<div><dt>${label}</dt><dd>${value}</dd></div>`;
+  const sub = ['Relazione escursionistica', m.data, m.autore ? `a cura di ${m.autore}` : ''].filter(Boolean).map(esc).join(' · ');
+
+  return `
+    <header class="doc-head">
+      ${club ? `<div class="club">${esc(club)}</div>` : ''}
+      <h1>${esc(r.name)}</h1>
+      <p class="sub">${sub}</p>
+    </header>
+    ${r.desc ? `<p class="lead">${esc(r.desc)}</p>` : ''}
+
+    <h2>Scheda tecnica</h2>
+    <table class="tech">${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table>
+
+    ${rel ? rel.html : `<p class="note">La relazione dettagliata di questo percorso non è ancora stata scritta (file <code>relazioni/${esc(r.id)}.md</code>).</p>`}
+
+    ${items.length ? `<h2>Punti di interesse</h2>
+    <ol class="poi-list">${items.map(({ p }) => `<li><strong>${p.title}</strong> <span class="cat">(${p.category})</span>
+      <div>${p.text}</div>
+      <div class="poi-photos">${imageUrls(p).map((u) => `<img src="${esc(u)}" alt="${esc(p.title)}">`).join('')}</div></li>`).join('')}</ol>` : ''}
+
+    ${services.length ? `<h2>Servizi</h2><ul>${services.map((p) => `<li><strong>${p.title}</strong>: ${p.text}</li>`).join('')}</ul>` : ''}
+
+    <section class="doc-card">
+      <h2>Scheda del percorso</h2>
+      <dl class="stats">
+        ${cell('Lunghezza', `${fmt(st.km)} km`)}
+        ${cell(st.estimated ? 'Durata (stima)' : 'Durata', fmtDuration(st.hours))}
+        ${cell(st.estimated ? 'Velocità (stima)' : 'Velocità media', `${fmt(st.speed)} km/h`)}
+        ${st.hasEle ? cell('Salita', `+${Math.round(st.ascent)} m`) + cell('Discesa', `−${Math.round(st.descent)} m`) + cell('Quota min–max', `${Math.round(st.min)}–${Math.round(st.max)} m`) : ''}
+      </dl>
+      ${st.hasEle ? `<div class="doc-profile" style="--c:${COLORS[r.difficulty]}">${profileSvg(st.profile, 700)}</div>` : ''}
+      ${mapImg ? `<figure class="doc-map"><img src="${mapImg.url}" alt="Mappa del percorso">
+        <figcaption>Mappa del percorso. I = inizio, F = fine, i numeri indicano i punti di interesse.${mapImg.hasBase ? ' Sfondo © OpenStreetMap contributors.' : ' Sfondo cartografico non disponibile.'}</figcaption></figure>` : ''}
+    </section>
+
+    <p class="disclaimer">Le informazioni sono indicative: prima di partire verificare meteo, condizioni del sentiero e la propria preparazione. Documento generato il ${new Date().toLocaleDateString('it-IT')}.</p>`;
+}
+
+async function openReport(id) {
+  const r = routes.find((x) => x.id === id);
+  if (!r) return;
+  reportRoute = r;
+  reportEl.hidden = false;
+  reportEl.scrollTop = 0;
+  document.body.classList.add('report-open');
+  $('#reportTitle').textContent = r.name;
+  reportDoc.style.setProperty('--c', COLORS[r.difficulty]);
+  reportDoc.innerHTML = '<p class="note">Preparo la relazione…</p>';
+  $('#reportClose').focus();
+  const [rel, mapImg] = await Promise.all([loadRelazione(r), makeMapImage(r)]);
+  if (reportRoute !== r) return; // nel frattempo chiusa o cambiata
+  reportDoc.innerHTML = reportHtml(r, rel, mapImg);
+}
+
+function closeReport() {
+  reportRoute = null;
+  reportEl.hidden = true;
+  reportDoc.innerHTML = '';
+  document.body.classList.remove('report-open');
+}
+
+// "Esporta PDF" apre la finestra di stampa del browser: scegliendo "Salva come PDF" il file prende il nome della relazione
+$('#reportPdf').addEventListener('click', () => {
+  if (!reportRoute) return;
+  const prev = document.title;
+  document.title = `Relazione - ${reportRoute.name}`;
+  window.addEventListener('afterprint', () => { document.title = prev; }, { once: true });
+  window.print();
+});
+$('#reportClose').addEventListener('click', closeReport);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && reportRoute) closeReport(); });
 
 load();
