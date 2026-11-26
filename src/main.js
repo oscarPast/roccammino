@@ -21,6 +21,7 @@ function setPanelHidden(hidden) {
   togglePanel.classList.toggle('hidden-panel', hidden);
   togglePanel.textContent = hidden ? 'Percorsi ▼' : 'Nascondi pannello ▲';
   togglePanel.setAttribute('aria-expanded', String(!hidden));
+  if (!hidden && isMobile() && sheetRoute) closeSheet();
 }
 togglePanel.addEventListener('click', () => setPanelHidden(!panel.classList.contains('hidden')));
 
@@ -66,7 +67,6 @@ let routes = [];            // metadati + layer + coordinate
 let pois = [];              // { feature, marker }
 let selectedId = null;
 let sheetRoute = null;      // percorso mostrato nella scheda inferiore
-let panelWasHidden = false; // su telefono il pannello si nasconde mentre la scheda è aperta
 const sheetEl = $('#sheet');
 
 // ---------- Caricamento dati ----------
@@ -88,11 +88,15 @@ async function load() {
     const stats = computeStats(line, times);
     const meta = {
       ...base,
+      // maiuscole e spazi non contano: "Impegnativa" vale come "impegnativa"
+      difficulty: String(base.difficulty ?? '').trim().toLowerCase(),
+      themes: (base.themes ?? []).map((t) => String(t).trim().toLowerCase()),
       km: Math.round(stats.km * 10) / 10,
       ascent: stats.hasEle ? Math.round(stats.ascent) : base.ascent,
     };
 
     const coords = line.map(([lng, lat]) => [lat, lng]);
+    if (!COLORS[meta.difficulty]) console.warn(`Percorso "${meta.id}": difficoltà "${base.difficulty}" non valida (usa facile, media o impegnativa): il percorso non comparirà.`);
     const layer = L.polyline(coords, { color: COLORS[meta.difficulty], weight: 3, opacity: 0.9 });
     layer.on('click', () => select(meta.id));
     routes.push({ ...meta, coords, layer, stats, markers: endpoints(meta, coords) });
@@ -259,26 +263,13 @@ function renderSheet(r) {
   updateHere();
 }
 
-function openSheet(r, { fit = true } = {}) {
-  if (!sheetRoute && isMobile()) {      // su telefono libera lo schermo: nasconde il pannello
-    panelWasHidden = panel.classList.contains('hidden');
-    setPanelHidden(true);
-  }
+function openSheet(r) {
+  if (isMobile()) setPanelHidden(true); // su telefono la scheda e il pannello si dividono lo spazio in basso
   sheetRoute = r;
   hideHover();
   renderSheet(r);
-  // inquadra il percorso nella parte di mappa che resta sopra la scheda
-  if (fit) map.fitBounds(r.layer.getBounds(), { paddingTopLeft: [40, 40], paddingBottomRight: [40, sheetEl.offsetHeight + 24] });
   placeUser();
-}
-
-// Con il seguimi attivo e un percorso in focus, la scheda con l'altimetria deve essere visibile
-function showSheetForFocus() {
-  if (sheetRoute || !selectedId) return;
-  const r = routes.find((x) => x.id === selectedId);
-  if (!r) return;
-  openSheet(r, { fit: false }); // il seguimi inquadra già la posizione
-  applyFilters();
+  updateRouteTools();
 }
 
 function closeSheet() {
@@ -289,9 +280,8 @@ function closeSheet() {
   document.body.classList.remove('sheet-open');
   document.documentElement.style.removeProperty('--sheet-h');
   hideHover();
-  if (isMobile() && !panelWasHidden) setPanelHidden(false);
   placeUser();
-  applyFilters(); // tutte le tracce tornano visibili
+  updateRouteTools();
 }
 
 sheetEl.addEventListener('click', (e) => { if (e.target.closest('.sheet-close')) closeSheet(); });
@@ -394,11 +384,8 @@ function applyFilters() {
   );
   const visibleIds = new Set(visible.map((r) => r.id));
 
-  if (selectedId && !visibleIds.has(selectedId)) selectedId = null;
-  if (sheetRoute && !visibleIds.has(sheetRoute.id)) { closeSheet(); return; } // closeSheet richiama applyFilters
-
-  // con la scheda aperta si vede solo il percorso scelto: gli altri vengono nascosti
-  const shownIds = sheetRoute ? new Set([sheetRoute.id]) : visibleIds;
+  // con un percorso selezionato la mappa mostra solo quello (i filtri agiscono sull'elenco)
+  const shownIds = selectedId ? new Set([selectedId]) : visibleIds;
 
   routes.forEach((r) => {
     const on = shownIds.has(r.id);
@@ -418,6 +405,8 @@ function applyFilters() {
   });
 
   renderList(visible);
+  updateFocusBar();
+  updateRouteTools();
 }
 
 let lastVisible = []; // percorsi che passano i filtri
@@ -445,29 +434,72 @@ function renderList(visible) {
     .join('');
 }
 
-function select(id) {
+const selectedRoute = () => routes.find((x) => x.id === selectedId);
+
+function fitRoute(r) {
+  map.fitBounds(r.layer.getBounds(), {
+    paddingTopLeft: [40, 40],
+    paddingBottomRight: [40, (sheetRoute ? sheetEl.offsetHeight : 0) + 24], // lascia libera la parte coperta dalla scheda
+  });
+}
+
+// Seleziona un percorso: le altre tracce spariscono. Lo zoom automatico solo se richiesto (scelta dall'elenco).
+function select(id, { fit = false } = {}) {
   selectedId = id;
   const r = routes.find((x) => x.id === id);
-  openSheet(r);
-  applyFilters(); // nasconde le altre tracce
+  if (sheetRoute && sheetRoute.id !== id) { sheetRoute = r; hideHover(); renderSheet(r); } // la scheda segue la selezione
+  applyFilters();
   r.layer.bringToFront();
+  if (fit) fitRoute(r);
+  placeUser();
+}
+
+function chooseFromList(id) {
+  select(id, { fit: true });
+  if (isMobile()) setPanelHidden(true); // su telefono libera lo schermo
+}
+
+// "Mostra tutti": annulla la selezione e torna alla vista d'insieme
+function clearSelection() {
+  if (!selectedId) return;
+  closeSheet();
+  selectedId = null;
+  if (follow) { follow = false; updateLocateBtn(); } // altrimenti la mappa tornerebbe subito sulla posizione
+  applyFilters();
+  placeUser();
+  if (lastVisible.length) map.fitBounds(L.featureGroup(lastVisible.map((r) => r.layer)).getBounds(), { padding: [30, 30] });
+}
+
+function updateFocusBar() {
+  const r = selectedRoute();
+  $('#focusBar').hidden = !r;
+  if (r) $('#focusName').textContent = r.name;
 }
 
 document.addEventListener('change', (e) => e.target.closest('#panel, .filter-card') && applyFilters());
 document.addEventListener('input', (e) => { if (e.target.id === 'km') applyFilters(); });
-$('#search').addEventListener('input', () => renderList(lastVisible));
+$('#search').addEventListener('input', (e) => {
+  $('#searchClear').hidden = !e.target.value;
+  renderList(lastVisible);
+});
+$('#searchClear').addEventListener('click', () => {
+  $('#search').value = '';
+  $('#searchClear').hidden = true;
+  renderList(lastVisible);
+});
+$('#showAll').addEventListener('click', clearSelection);
 $('#search').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && lastShown.length === 1) { // un solo risultato: Invio lo apre
     e.preventDefault();
     e.target.blur();
-    select(lastShown[0].id);
+    chooseFromList(lastShown[0].id);
   }
 });
 $('#routeList').addEventListener('click', (e) => {
   const d = e.target.closest('[data-doc]');
   if (d) { e.preventDefault(); return openReport(d.dataset.doc); }
   const b = e.target.closest('button');
-  if (b) select(b.dataset.id);
+  if (b) chooseFromList(b.dataset.id);
 });
 
 // ---------- Posizione e "seguimi" ----------
@@ -546,6 +578,55 @@ const filterUi = (() => {
   new Filters().addTo(map);
   return { btn, setOpen };
 })();
+// Strumenti del percorso selezionato: altimetria e "inquadra"; compaiono solo con un percorso selezionato
+const toolsUi = (() => {
+  let box, profile, fit;
+  const icon = (paths) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  const Tools = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd() {
+      box = L.DomUtil.create('div', 'leaflet-bar route-tools');
+      box.hidden = true;
+      profile = L.DomUtil.create('a', '', box);
+      profile.href = '#';
+      profile.setAttribute('role', 'button');
+      profile.innerHTML = icon('<path d="M3 20h18"/><path d="M4 16l4-5 4 3 5-8 3 4"/>');
+      fit = L.DomUtil.create('a', '', box);
+      fit.href = '#';
+      fit.setAttribute('role', 'button');
+      fit.title = 'Inquadra il percorso';
+      fit.setAttribute('aria-label', 'Inquadra il percorso');
+      fit.innerHTML = icon('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>');
+      L.DomEvent.disableClickPropagation(box);
+      L.DomEvent.on(profile, 'click', (e) => {
+        L.DomEvent.preventDefault(e);
+        const r = selectedRoute();
+        if (sheetRoute) closeSheet(); else if (r) openSheet(r);
+      });
+      L.DomEvent.on(fit, 'click', (e) => {
+        L.DomEvent.preventDefault(e);
+        const r = selectedRoute();
+        if (r) fitRoute(r);
+      });
+      return box;
+    },
+  });
+  new Tools().addTo(map);
+  return { box, profile, fit };
+})();
+
+function updateRouteTools() {
+  const r = selectedRoute();
+  toolsUi.box.hidden = !r;
+  toolsUi.profile.hidden = !r || !r.stats.hasEle;
+  toolsUi.profile.classList.toggle('active', !!sheetRoute);
+  const label = sheetRoute ? 'Chiudi l\'altimetria' : 'Apri l\'altimetria';
+  toolsUi.profile.title = label;
+  toolsUi.profile.setAttribute('aria-label', label);
+  toolsUi.profile.setAttribute('aria-pressed', String(!!sheetRoute));
+}
+
 map.on('click', () => filterUi.setOpen(false));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') filterUi.setOpen(false); });
 
@@ -618,7 +699,6 @@ function clearUser() {
 function startTracking() {
   if (!('geolocation' in navigator)) return toast('Geolocalizzazione non disponibile.');
   follow = true;
-  showSheetForFocus();
   let firstFix = true;
   toast('Cerco la tua posizione…');
   watchId = navigator.geolocation.watchPosition(
@@ -654,7 +734,6 @@ locateBtn.addEventListener('click', (e) => {
   if (watchId === null) return startTracking();
   if (!follow) {                       // in pausa: torna a seguire
     follow = true;
-    showSheetForFocus();
     if (userPos) map.panTo(offsetCenter(...displayPos()));
     return updateLocateBtn();
   }

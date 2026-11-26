@@ -13,8 +13,15 @@
     </header>
 
     <section aria-label="Cerca" class="search">
-      <input id="search" type="search" placeholder="Cerca un percorso…" autocomplete="off"
-             aria-label="Cerca un percorso per nome" />
+      <div id="focusBar" hidden>
+        <span>Stai guardando: <strong id="focusName"></strong></span>
+        <button id="showAll" type="button">Mostra tutti</button>
+      </div>
+      <div class="search-box">
+        <input id="search" type="search" placeholder="Cerca un percorso…" autocomplete="off"
+               aria-label="Cerca un percorso per nome" />
+        <button id="searchClear" type="button" aria-label="Cancella la ricerca" hidden>×</button>
+      </div>
     </section>
 
     <section aria-label="Percorsi">

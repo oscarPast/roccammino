@@ -197,7 +197,6 @@ body.sheet-open #toast { bottom: calc(var(--sheet-h, 0px) + 1rem); }
   #sheet { left: 0; }
   .sheet-body { grid-template-columns: 1fr; }
   .sheet-body .stats { grid-template-columns: repeat(3, 1fr); }
-  body.sheet-open #togglePanel { display: none; }
 }
 
 /* pulsante "Dove sono" sulla mappa */
@@ -305,3 +304,48 @@ body.sheet-open #toast { bottom: calc(var(--sheet-h, 0px) + 1rem); }
 }
 #routeList .empty { padding: .5rem .7rem; color: var(--muted); }
 .filter-card .range { display: block; margin: .2rem 0 .7rem; }
+
+/* l'attributo hidden vince sempre sugli stili dei componenti */
+[hidden] { display: none !important; }
+
+/* percorso selezionato: riga "Stai guardando" nel pannello */
+#focusBar {
+  display: flex; align-items: center; justify-content: space-between; gap: .6rem;
+  margin-bottom: .4rem; padding: .4rem .6rem; font-size: .85rem;
+  background: #e1e8e3; border-left: 4px solid var(--ochre);
+}
+#focusBar strong { overflow-wrap: anywhere; }
+#showAll {
+  flex: none; padding: .35rem .7rem; font: inherit; font-size: .85rem; font-weight: 600;
+  cursor: pointer; border: 0; border-radius: 4px; background: var(--pine); color: #fff;
+}
+
+/* campo di ricerca con pulsante di pulizia */
+.search-box { position: relative; }
+#search { padding-right: 2.4rem; }
+#search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+#searchClear {
+  position: absolute; top: 50%; right: .2rem; transform: translateY(-50%);
+  width: 2.2rem; height: 2.2rem; border: 0; background: none; cursor: pointer;
+  font-size: 1.5rem; line-height: 1; color: var(--muted);
+}
+
+/* strumenti del percorso selezionato (altimetria, inquadra) */
+.leaflet-bar.route-tools a,
+.leaflet-touch .leaflet-bar.route-tools a {
+  display: grid; place-items: center; width: 34px; height: 34px; line-height: 1; color: var(--ink);
+}
+.route-tools a.active { color: #fff; background: #2563eb; }
+
+/* schermi touch: pulsanti della mappa più grandi, più facili da centrare col dito */
+@media (pointer: coarse) {
+  .leaflet-bar.locate-control a, .leaflet-touch .leaflet-bar.locate-control a,
+  .filter-control .leaflet-bar a, .leaflet-touch .filter-control .leaflet-bar a,
+  .leaflet-bar.route-tools a, .leaflet-touch .leaflet-bar.route-tools a { width: 44px; height: 44px; }
+}
+
+/* telefono: il pulsante "Percorsi" resta visibile sopra la scheda aperta */
+@media (max-width: 720px) {
+  body.sheet-open #panel.hidden ~ #togglePanel,
+  body.sheet-open #togglePanel.hidden-panel { bottom: calc(var(--sheet-h, 0px) + 12px); }
+}
